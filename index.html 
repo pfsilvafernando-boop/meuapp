@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green - Análise Esportiva</title>
+    <style>
+        :root { --bg: #0b0f19; --card: #121824; --input: #1a2234; --primary: #00ff66; --txt: #fff; --muted: #64748b; }
+        body { background: var(--bg); color: var(--txt); font-family: sans-serif; padding: 16px; margin: 0; padding-bottom: 90px; }
+        .logo { font-size: 24px; font-weight: bold; color: var(--primary); margin-bottom: 24px; }
+        .card { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid #1e293b; }
+        .card-green { border-left: 4px solid var(--primary); }
+        .title { color: var(--primary); font-size: 16px; font-weight: bold; margin-bottom: 16px; }
+        label { display: block; color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+        select, input { width: 100%; background: var(--input); border: 1px solid #2d3748; color: #fff; padding: 12px; border-radius: 8px; box-sizing: border-box; outline: none; margin-bottom: 16px; }
+        .row { display: flex; gap: 12px; }
+        .row div { flex: 1; }
+        .btn { background: var(--primary); color: #000; font-weight: bold; border: none; padding: 14px; border-radius: 8px; width: 100%; font-size: 16px; cursor: pointer; }
+        .btn-secundario { background: var(--input); color: var(--primary); border: 1px solid var(--primary); font-weight: bold; padding: 12px; border-radius: 8px; width: 100%; font-size: 14px; cursor: pointer; margin-bottom: 16px; }
+        .jogo { padding: 12px 0; border-bottom: 1px dashed #2d3748; font-size: 14px; }
+        .code-box { background: var(--input); padding: 12px; border-radius: 8px; margin: 16px 0; display: flex; justify-content: space-between; align-items: center; padding-right: 8px; }
+        .btn-copiar { background: #334155; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .odd { font-size: 24px; font-weight: bold; color: var(--primary); text-align: right; }
+        .casas-container { margin-top: 16px; padding-top: 16px; border-top: 1px solid #2d3748; }
+        .casas-titulo { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+        .casas-botoes { display: flex; gap: 10px; }
+        .btn-casa { flex: 1; background: var(--input); border: 1px solid #2d3748; color: white; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: bold; display: inline-block; }
+        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e293b; z-index: 1000; }
+        .nav a { color: var(--muted); text-decoration: none; font-size: 12px; text-align: center; width: 100%; }
+        .nav .active { color: var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .historico-item { background: var(--card); border: 1px solid #1e293b; border-radius: 8px; padding: 12px; margin-bottom: 10px; font-size: 14px; }
+        .filtro-ligas { margin-bottom: 16px; }
+        .filtro-ligas summary { color: var(--primary); font-size: 13px; cursor: pointer; margin-bottom: 8px; }
+        .liga-check { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; color: var(--muted); }
+        .liga-check input { width: auto; margin: 0; }
+        .status-api { font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 12px; min-height: 16px; }
+        .status-ok { color: var(--primary); }
+        .status-erro { color: #ef4444; }
+        .tag-real { font-size: 10px; background: rgba(0,255,102,0.15); color: var(--primary); padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
+        .tag-simulado { font-size: 10px; background: rgba(100,116,139,0.25); color: var(--muted); padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
+    </style>
+</head>
+<body>
+    <div class="logo">GREEN 🟢</div>
+
+    <div id="tab-inicio" class="tab-content">
+        <div class="card"><div class="title">Bem-vindo ao Green</div><p style="font-size:14px;color:var(--muted);margin:0;line-height:1.5;">Sua plataforma inteligente de múltiplas avançadas. Jogos e odds reais via The Odds API.</p></div>
+    </div>
+
+    <div id="tab-gerar" class="tab-content active">
+        <div class="card">
+            <div class="title">Gerar Nova Múltipla</div>
+
+            <button class="btn-secundario" id="btn-atualizar" onclick="atualizarJogosReais()">🔄 Atualizar Jogos Reais</button>
+            <div class="status-api" id="status-api">Toque em "Atualizar Jogos Reais" para buscar os jogos do dia.</div>
+
+            <label>Quantidade de Jogos</label>
+            <select id="qtd">
+                <option value="2">Dupla (2)</option>
+                <option value="3" selected>Tripla (3)</option>
+                <option value="4">Quádrupla (4)</option>
+                <option value="5">Quíntupla (5)</option>
+                <option value="6">Sêxtupla (6)</option>
+            </select>
+            <div class="row">
+                <div><label>Odd Mínima</label><input type="text" id="min" value="2.0"></div>
+                <div><label>Odd Máxima</label><input type="text" id="max" value="30.0"></div>
+            </div>
+
+            <details class="filtro-ligas">
+                <summary>Filtrar campeonatos (opcional)</summary>
+                <div id="ligas-lista"></div>
+            </details>
+
+            <button class="btn" id="btn-gerar" onclick="gerar()">Gerar Combinação Green</button>
+        </div>
+        <div id="resultado"></div>
+    </div>
+
+    <div id="tab-historico" class="tab-content">
+        <div class="card">
+            <div class="title">Histórico de Bilhetes</div>
+            <div id="historico-lista"></div>
+            <button class="btn" onclick="limparHist()" style="background:#ef4444;color:#fff;margin-top:10px;font-size:14px;padding:10px;">Limpar Histórico</button>
+        </div>
+    </div>
+
+    <div class="nav">
+        <a href="#" class="nav-item" onclick="switchTab(event,'tab-inicio',this)">🏠<br>Início</a>
+        <a href="#" class="nav-item active" onclick="switchTab(event,'tab-gerar',this)">⚡<br>Gerar</a>
+        <a href="#" class="nav-item" onclick="switchTab(event,'tab-historico',this)">📋<br>Histórico</a>
+    </div>
+
+    <script>
+        // ===== CONFIGURAÇÃO DA THE ODDS API =====
+        const ODDS_API_KEY = "ed2f47dad2b49196ba67b25ac27079de";
+        const ODDS_API_BASE = "https://api.the-odds-api.com/v4/sports";
+
+        // Ligas cobertas pela API (jogos e odds reais)
+        const ligasApi = {
+            "soccer_brazil_campeonato": "🇧🇷 Brasileirão Série A",
+            "soccer_epl": "🏴 Premier League",
+            "soccer_spain_la_liga": "🇪🇸 La Liga",
+            "soccer_italy_serie_a": "🇮🇹 Serie A",
+            "soccer_germany_bundesliga": "🇩🇪 Bundesliga",
+            "soccer_france_ligue_one": "🇫🇷 Ligue 1",
+            "soccer_conmebol_copa_libertadores": "🌎 Libertadores"
+        };
+
+        // Ligas sem cobertura na API (sorteio simulado) - nenhuma ativa no momento
+        const ligasSimuladas = {};
+
+        const mercados = ["Ambos Marcam: Sim","Ambos Marcam: Não","Mais de 2.5 Gols","Menos de 2.5 Gols","Mais de 1.5 Gols","Menos de 3.5 Gols","Vitória Mandante","Vitória Visitante","Resultado: Empate","Dupla Chance: Mandante ou Empate","Dupla Chance: Visitante ou Empate"];
+
+        // Armazena os jogos reais buscados da API, por liga
+        let jogosApiCache = {};
+
+        function montarFiltroLigas(){
+            const c = document.getElementById("ligas-lista");
+            const todasLigas = [...Object.values(ligasApi), ...Object.keys(ligasSimuladas)];
+            c.innerHTML = todasLigas.map(liga=>{
+                const ehSimulada = ligasSimuladas.hasOwnProperty(liga);
+                const tag = ehSimulada ? '<span class="tag-simulado">simulado</span>' : '<span class="tag-real">real</span>';
+                return `<label class="liga-check">
+                    <input type="checkbox" class="chk-liga" value="${liga}" checked>
+                    ${liga} ${tag}
+                </label>`;
+            }).join('');
+        }
+        montarFiltroLigas();
+
+        function ligasSelecionadas(){
+            const chks = document.querySelectorAll(".chk-liga:checked");
+            const sel = Array.from(chks).map(c=>c.value);
+            return sel.length ? sel : [...Object.values(ligasApi), ...Object.keys(ligasSimuladas)];
+        }
+
+        function switchTab(e,t,l){
+            e.preventDefault();
+            document.querySelectorAll(".nav-item").forEach(i=>i.classList.remove("active"));
+            document.querySelectorAll(".tab-content").forEach(x=>x.classList.remove("active"));
+            l.classList.add("active");
+            document.getElementById(t).classList.add("active");
+            if(t==="tab-historico") histUI();
+        }
+        function limparHist(){ localStorage.removeItem("green_historico"); histUI(); }
+        function copiar(x,b){
+            const i=document.createElement("input"); i.value=x; document.body.appendChild(i); i.select();
+            document.execCommand("copy"); document.body.removeChild(i);
+            const t=b.innerText; b.innerText="Copiado!"; b.style.background="#00ff66"; b.style.color="#000";
+            setTimeout(()=>{b.innerText=t;b.style.background="#334155";b.style.color="#fff";},1500);
+        }
+
+        // Busca jogos e odds reais da The Odds API para todas as ligas cobertas
+        async function atualizarJogosReais(){
+            const statusEl = document.getElementById("status-api");
+            const btn = document.getElementById("btn-atualizar");
+            btn.disabled = true;
+            statusEl.className = "status-api";
+            statusEl.innerText = "Buscando jogos reais, aguarde...";
+
+            let totalJogos = 0;
+            let erroGeral = null;
+
+            for(const [sportKey, nomeLiga] of Object.entries(ligasApi)){
+                try{
+                    const url = `${ODDS_API_BASE}/${sportKey}/odds/?apiKey=${ODDS_API_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`;
+                    const resp = await fetch(url);
+                    if(!resp.ok){
+                        const txt = await resp.text();
+                        console.warn(`Erro ao buscar ${nomeLiga}:`, resp.status, txt);
+                        jogosApiCache[nomeLiga] = [];
+                        if(resp.status === 401) erroGeral = "Chave de API inválida.";
+                        if(resp.status === 429) erroGeral = "Limite de créditos da API atingido este mês.";
+                        continue;
+                    }
+                    const data = await resp.json();
+                    const jogos = data.map(evento=>{
+                        if(!evento.bookmakers || evento.bookmakers.length===0) return null;
+                        const mercadoH2h = evento.bookmakers[0].markets.find(m=>m.key==="h2h");
+                        if(!mercadoH2h) return null;
+                        return {
+                            h: evento.home_team,
+                            a: evento.away_team,
+                            outcomes: mercadoH2h.outcomes,
+                            c: nomeLiga,
+                            real: true
+                        };
+                    }).filter(j=>j!==null);
+                    jogosApiCache[nomeLiga] = jogos;
+                    totalJogos += jogos.length;
+                }catch(err){
+                    console.warn(`Falha ao buscar ${nomeLiga}:`, err);
+                    jogosApiCache[nomeLiga] = [];
+                    erroGeral = "Falha de conexão com a API.";
+                }
+            }
+
+            btn.disabled = false;
+            if(erroGeral){
+                statusEl.className = "status-api status-erro";
+                statusEl.innerText = `⚠ ${erroGeral} Jogos disponíveis: ${totalJogos}.`;
+            } else if(totalJogos === 0){
+                statusEl.className = "status-api status-erro";
+                statusEl.innerText = "Nenhum jogo real encontrado agora (pode não haver partidas hoje nessas ligas).";
+            } else {
+                statusEl.className = "status-api status-ok";
+                const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+                statusEl.innerText = `✓ ${totalJogos} jogos reais carregados às ${agora}.`;
+            }
+        }
+
+        // Sorteia um confronto simulado (para ligas sem cobertura da API, ex: Série B)
+        function sortearJogoSimulado(liga, timesUsados){
+            let tentativas=0;
+            while(tentativas<300){
+                const times = ligasSimuladas[liga].filter(t=>!timesUsados.has(t));
+                if(times.length>=2){
+                    const h = times[Math.floor(Math.random()*times.length)];
+                    const restantes = times.filter(t=>t!==h);
+                    const a = restantes[Math.floor(Math.random()*restantes.length)];
+                    timesUsados.add(h); timesUsados.add(a);
+                    const p = mercados[Math.floor(Math.random()*mercados.length)];
+                    const o = parseFloat((Math.random()*(2.9-1.35)+1.35).toFixed(2));
+                    return {h,a,p,o,c:liga,real:false};
+                }
+                tentativas++;
+            }
+            return null;
+        }
+
+        // Converte um jogo real da API (com outcomes h2h) em um palpite com mercado e odd
+        function transformarJogoReal(jogoReal){
+            const opcoes = jogoReal.outcomes.map(o=>{
+                let rotulo;
+                if(o.name === jogoReal.h) rotulo = "Vitória Mandante";
+                else if(o.name === jogoReal.a) rotulo = "Vitória Visitante";
+                else rotulo = "Resultado: Empate";
+                return {rotulo, odd:o.price};
+            });
+            const escolha = opcoes[Math.floor(Math.random()*opcoes.length)];
+            return {h:jogoReal.h, a:jogoReal.a, p:escolha.rotulo, o:escolha.odd, c:jogoReal.c, real:true};
+        }
+
+        function gerar(){
+            const q = parseInt(document.getElementById("qtd").value)||3;
+            const ligasAtivas = ligasSelecionadas();
+            const timesUsados = new Set();
+            const s = [];
+
+            // Monta pool de jogos reais disponíveis (das ligas ativas selecionadas)
+            let poolReal = [];
+            ligasAtivas.forEach(liga=>{
+                if(jogosApiCache[liga]) poolReal = poolReal.concat(jogosApiCache[liga]);
+            });
+            // Embaralha o pool real
+            for(let i=poolReal.length-1;i>0;i--){
+                const j = Math.floor(Math.random()*(i+1));
+                [poolReal[i],poolReal[j]]=[poolReal[j],poolReal[i]];
+            }
+
+            for(const jogoReal of poolReal){
+                if(s.length>=q) break;
+                if(timesUsados.has(jogoReal.h) || timesUsados.has(jogoReal.a)) continue;
+                timesUsados.add(jogoReal.h); timesUsados.add(jogoReal.a);
+                s.push(transformarJogoReal(jogoReal));
+            }
+
+            // Completa com ligas simuladas (ex: Série B) se ainda faltar e estiverem selecionadas
+            const ligasSimAtivas = ligasAtivas.filter(l=>ligasSimuladas.hasOwnProperty(l));
+            while(s.length<q && ligasSimAtivas.length>0){
+                const liga = ligasSimAtivas[Math.floor(Math.random()*ligasSimAtivas.length)];
+                const j = sortearJogoSimulado(liga, timesUsados);
+                if(!j) break;
+                s.push(j);
+            }
+
+            if(s.length===0){
+                document.getElementById("resultado").innerHTML = `<div class="card"><p style="color:var(--muted);text-align:center;margin:0;">Nenhum jogo disponível. Toque em "Atualizar Jogos Reais" primeiro, ou selecione a Série B (simulada).</p></div>`;
+                return;
+            }
+
+            let o=s.reduce((t,j)=>t*j.o,1);const c="GRN-"+Math.random().toString(36).substring(2,7).toUpperCase();
+            let h=`<div class="card card-green"><div class="title">Bilhete Gerado</div>`;
+            s.forEach(j=>{
+                const tag = j.real ? '<span class="tag-real">real</span>' : '<span class="tag-simulado">simulado</span>';
+                h+=`<div class="jogo"><b>${j.h} x ${j.a}</b> ${tag}<br><small>${j.c} | Palpite: ${j.p} (${j.o.toFixed(2)})</small></div>`;
+            });
+            h+=`<div class="code-box"><span style="font-family:monospace;padding-left:8px;color:var(--primary);font-weight:bold">${c}</span><button class="btn-copiar" onclick="copiar('${c}',this)">Copiar</button></div>
+                <div class="odd"><small style="font-size:12px;color:var(--muted)">Odd Total:</small> ${o.toFixed(2)}</div>
+                <div class="casas-container"><div class="casas-titulo" style="line-height:1.4;color:var(--primary);">🟢 Copie o código acima e monte seus palpites direto nas abas de Futebol em:</div><div class="casas-botoes">
+                <a href="https://betano.com" target="_blank" class="btn-casa" style="border-color:#3b82f6;">Betano</a>
+                <a href="https://bet365.com" target="_blank" class="btn-casa" style="border-color:#eab308;">Bet365</a>
+                </div></div></div>`;
+            document.getElementById("resultado").innerHTML=h;
+            let l=JSON.parse(localStorage.getItem("green_historico"))||[];
+            l.unshift({codigo:c,odd:o.toFixed(2),data:new Date().toLocaleDateString('pt-BR')});
+            localStorage.setItem("green_historico",JSON.stringify(l.slice(0,20)));
+        }
+        function histUI(){
+            const l=JSON.parse(localStorage.getItem("green_historico"))||[],c=document.getElementById("historico-lista");
+            if(l.length===0){c.innerHTML=`<p style="color:var(--muted);font-size:14px;text-align:center;">Nenhum bilhete ainda.</p>`;return;}
+            c.innerHTML=l.map(i=>`<div class="historico-item"><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:var(--primary);font-weight:bold;font-family:monospace;">${i.codigo}</span><span style="color:var(--muted);font-size:12px;">${i.data}</span></div><div style="text-align:right;font-weight:bold;color:#fff;">Odd Total: <span style="color:var(--primary);">${i.odd}</span></div></div>`).join('');
+        }
+    </script>
+</body>
+</html>
